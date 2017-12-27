@@ -243,15 +243,15 @@ namespace XMLtoSQL
                     });
                     var regionParser = new Func<XmlReader, object>[]
                     {
-                    reader =>
-                    {
-                        var regionGUID = reader.GetAttribute("AOGUID");
-                        regionGUIDs.Add(regionGUID);
-                        return Guid.Parse(regionGUID);
-                    },
-                    reader => sbyte.Parse(reader.GetAttribute("REGIONCODE")),
-                    reader => reader.GetAttribute("OFFNAME"),
-                    reader => reader.GetAttribute("FORMALNAME")
+                        reader =>
+                        {
+                            var regionGUID = reader.GetAttribute("AOGUID");
+                            regionGUIDs.Add(regionGUID);
+                            return Guid.Parse(regionGUID);
+                        },
+                        reader => sbyte.Parse(reader.GetAttribute("REGIONCODE")),
+                        reader => reader.GetAttribute("OFFNAME"),
+                        reader => reader.GetAttribute("FORMALNAME")
                     };
                     watch.Restart();
                     writer.DestinationTableName = "Region";
@@ -260,6 +260,7 @@ namespace XMLtoSQL
                     Console.WriteLine("Регионы записаны, времени затрачено - {0}", watch.ElapsedMilliseconds);
                 }
 
+                var regionGUIDsSorted = new SortedSet<string>(regionGUIDs);
                 var rayonGUIDs = new List<string>();
                 using (var writer = new SqlBulkCopy(connection))
                 {
