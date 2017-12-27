@@ -251,14 +251,20 @@ namespace XMLtoSQL
                     soursePaths[i] = objectsPath;
                 }
 
-                soursePaths[soursePaths.Length - 2] = housesPath;
+                soursePaths[soursePaths.Length - 1] = housesPath;
                 var predicates = new Func<XmlReader, bool>[]
                 {
                     reader => reader.GetAttribute("AOLEVEL") == "1",
                     reader =>
                     {
                         var level = byte.Parse(reader.GetAttribute("AOLEVEL"));
-                        tempParentGUID = Guid.Parse(reader.GetAttribute("PARENTGUID"));
+                        var parentGUID = reader.GetAttribute("PARENTGUID");
+                        if (parentGUID.Length == 0)
+                        {
+                            return false;
+                        }
+
+                        tempParentGUID = Guid.Parse(parentGUID);
                         return (level == 3 || level == 35) && parentGUIDs.Contains(tempParentGUID);
                     },
                     reader =>
@@ -349,7 +355,8 @@ namespace XMLtoSQL
                         writer.BatchSize = 1000;
                         writer.DestinationTableName = tablesNames[tableNumber];
                         watch.Restart();
-                        writer.WriteToServer(new FIASXMLReader(XmlReader.Create(soursePaths[tableNumber]), predicates[tableNumber], parsers[tableNumber]));
+                        var reader = (new FIASXMLReader(XmlReader.Create(soursePaths[tableNumber]), predicates[tableNumber], parsers[tableNumber]));
+                        writer.WriteToServer(reader);
                         watch.Stop();
                         Console.WriteLine("Таблица [{0}] заполнена, времени затрачено - {1}", tablesNames[tableNumber], watch.ElapsedMilliseconds);
                     }
