@@ -259,7 +259,7 @@ namespace XMLtoSQL
                     {
                         var level = byte.Parse(reader.GetAttribute("AOLEVEL"));
                         var parentGUID = reader.GetAttribute("PARENTGUID");
-                        if (parentGUID.Length == 0)
+                        if (parentGUID == null)
                         {
                             return false;
                         }
