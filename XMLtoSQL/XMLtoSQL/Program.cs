@@ -259,31 +259,37 @@ namespace XMLtoSQL
                     {
                         var level = byte.Parse(reader.GetAttribute("AOLEVEL"));
                         var parentGUID = reader.GetAttribute("PARENTGUID");
-                        if (parentGUID == null)
+                        if ((level != 3 && level != 35) || parentGUID == null)
                         {
                             return false;
                         }
 
                         tempParentGUID = Guid.Parse(parentGUID);
-                        return (level == 3 || level == 35) && parentGUIDs.Contains(tempParentGUID);
+                        return parentGUIDs.Contains(tempParentGUID);
                     },
                     reader =>
                     {
                         var level = byte.Parse(reader.GetAttribute("AOLEVEL"));
                         var parentGUID = reader.GetAttribute("PARENTGUID");
-                        if (parentGUID == null)
+                        if ((level != 4 && level != 6) || parentGUID == null)
                         {
                             return false;
                         }
 
                         tempParentGUID = Guid.Parse(parentGUID);
-                        return (level == 4 || level == 6) && parentGUIDs.Contains(tempParentGUID);
+                        return parentGUIDs.Contains(tempParentGUID);
                     },
                     reader =>
                     {
                         var level = byte.Parse(reader.GetAttribute("AOLEVEL"));
-                        tempParentGUID = Guid.Parse(reader.GetAttribute("PARENTGUID"));
-                        return (level == 7 || level == 75) && parentGUIDs.Contains(tempParentGUID);
+                        var parentGUID = reader.GetAttribute("PARENTGUID");
+                        if ((level != 7 && level != 75) || parentGUID == null)
+                        {
+                            return false;
+                        }
+
+                        tempParentGUID = Guid.Parse(parentGUID);
+                        return parentGUIDs.Contains(tempParentGUID);
                     },
                     reader =>
                     {
