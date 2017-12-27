@@ -231,124 +231,134 @@ namespace XMLtoSQL
                 }
 
                 var watch = new Stopwatch();
+                var newGUIDs = new List<Guid>();
+                var parentGUIDs = (SortedSet<Guid>)(null);
+                var tempParentGUID = new Guid();
 
-                var regionGUIDs = new List<string>();
-
-                using (var writer = new SqlBulkCopy(connection))
+                var tablesCount = 5;
+                var tablesNames = new string[]
                 {
-                    writer.BatchSize = 1000;
-                    var regionPredicate = (Func<XmlReader, bool>)((reader) =>
+                    "Region",
+                    "Rayon",
+                    "Town",
+                    "Street",
+                    "House"
+                };
+
+                var soursePaths = new string[tablesCount];
+                for (var i = 0; i < soursePaths.Length - 1; i++)
+                {
+                    soursePaths[i] = objectsPath;
+                }
+
+                soursePaths[soursePaths.Length - 2] = housesPath;
+                var predicates = new Func<XmlReader, bool>[]
+                {
+                    reader => reader.GetAttribute("AOLEVEL") == "1",
+                    reader =>
                     {
-                        return reader.GetAttribute("AOLEVEL") == "1";
-                    });
-                    var regionParser = new Func<XmlReader, object>[]
+                        var level = byte.Parse(reader.GetAttribute("AOLEVEL"));
+                        tempParentGUID = Guid.Parse(reader.GetAttribute("PARENTGUID"));
+                        return (level == 3 || level == 35) && parentGUIDs.Contains(tempParentGUID);
+                    },
+                    reader =>
+                    {
+                        var level = byte.Parse(reader.GetAttribute("AOLEVEL"));
+                        tempParentGUID = Guid.Parse(reader.GetAttribute("PARENTGUID"));
+                        return (level == 4 || level == 6) && parentGUIDs.Contains(tempParentGUID);
+                    },
+                    reader =>
+                    {
+                        var level = byte.Parse(reader.GetAttribute("AOLEVEL"));
+                        tempParentGUID = Guid.Parse(reader.GetAttribute("PARENTGUID"));
+                        return (level == 7 || level == 75) && parentGUIDs.Contains(tempParentGUID);
+                    },
+                    reader =>
+                    {
+                        tempParentGUID = Guid.Parse(reader.GetAttribute("AOGUID"));
+                        return parentGUIDs.Contains(tempParentGUID);
+                    }
+                };
+
+                var parsers = new Func<XmlReader, object>[][]
+                {
+                    new Func<XmlReader, object>[]
                     {
                         reader =>
                         {
-                            var regionGUID = reader.GetAttribute("AOGUID");
-                            regionGUIDs.Add(regionGUID);
-                            return Guid.Parse(regionGUID);
+                            var regionGUID = Guid.Parse(reader.GetAttribute("AOGUID"));
+                            newGUIDs.Add(regionGUID);
+                            return regionGUID;
                         },
                         reader => sbyte.Parse(reader.GetAttribute("REGIONCODE")),
                         reader => reader.GetAttribute("OFFNAME"),
                         reader => reader.GetAttribute("FORMALNAME")
-                    };
-                    watch.Restart();
-                    writer.DestinationTableName = "Region";
-                    writer.WriteToServer(new FIASXMLReader(XmlReader.Create(objectsPath),regionPredicate, regionParser));
-                    watch.Stop();
-                    Console.WriteLine("Регионы записаны, времени затрачено - {0}", watch.ElapsedMilliseconds);
-                }
-
-                var regionGUIDsSorted = new SortedSet<string>(regionGUIDs);
-                var rayonGUIDs = new List<string>();
-                using (var writer = new SqlBulkCopy(connection))
-                {
-                    writer.BatchSize = 1000;
-                    var rayonPredicate = (Func<XmlReader, bool>)((reader) =>
-                    {
-                        var level = byte.Parse(reader.GetAttribute("AOLEVEL"));
-                        return (level == 3 || level == 35) && regionGUIDs.Contains(reader.GetAttribute("PARENTGUID"));
-                    });
-                    var rayonParser = new Func<XmlReader, object>[]
-                    {
-                    reader =>
-                    {
-                        var rayonGUID = reader.GetAttribute("AOGUID");
-                        rayonGUIDs.Add(rayonGUID);
-                        return Guid.Parse(rayonGUID);
                     },
-                    reader => Guid.Parse(reader.GetAttribute("PARENTGUID")),
-                    reader => reader.GetAttribute("OFFNAME"),
-                    reader => reader.GetAttribute("FORMALNAME")
-                    };
-                    watch.Restart();
-                    writer.DestinationTableName = "Rayon";
-                    writer.WriteToServer(new FIASXMLReader(XmlReader.Create(objectsPath), rayonPredicate, rayonParser));
-                    watch.Stop();
-                    Console.WriteLine("Районы записаны, времени затрачено - {0}", watch.ElapsedMilliseconds);
-                }
-
-                regionGUIDs.Clear();
-                var townGUIDs = new List<string>();
-                using (var writer = new SqlBulkCopy(connection))
-                {
-                    writer.BatchSize = 1000;
-                    var townPredicate = (Func<XmlReader, bool>)((reader) =>
-                    {
-                        var level = byte.Parse(reader.GetAttribute("AOLEVEL"));
-                        return (level == 4 || level == 6) && rayonGUIDs.Contains(reader.GetAttribute("PARENTGUID"));
-                    });
-                    var townParser = new Func<XmlReader, object>[]
+                    new Func<XmlReader, object>[]
                     {
                         reader =>
                         {
-                            var townGUID = reader.GetAttribute("AOGUID");
-                            townGUIDs.Add(townGUID);
-                            return Guid.Parse(townGUID);
+                            var rayonGUID = Guid.Parse(reader.GetAttribute("AOGUID"));
+                            newGUIDs.Add(rayonGUID);
+                            return rayonGUID;
                         },
-                        reader => Guid.Parse(reader.GetAttribute("PARENTGUID")),
+                        reader => tempParentGUID,
                         reader => reader.GetAttribute("OFFNAME"),
                         reader => reader.GetAttribute("FORMALNAME")
-                    };
-                    watch.Restart();
-                    writer.DestinationTableName = "Town";
-                    writer.WriteToServer(new FIASXMLReader(XmlReader.Create(objectsPath), townPredicate, townParser));
-                    watch.Stop();
-                    Console.WriteLine("Города записаны, времени затрачено - {0}", watch.ElapsedMilliseconds);
-                }
-
-                rayonGUIDs.Clear();
-                var streetGUIDs = new List<string>();
-                using (var writer = new SqlBulkCopy(connection))
-                {
-                    writer.BatchSize = 1000;
-                    var streetPredicate = (Func<XmlReader, bool>)((reader) =>
-                    {
-                        var level = byte.Parse(reader.GetAttribute("AOLEVEL"));
-                        return (level == 7 || level == 75) && townGUIDs.Contains(reader.GetAttribute("PARENTGUID"));
-                    });
-                    var streetParser = new Func<XmlReader, object>[]
+                    },
+                    new Func<XmlReader, object>[]
                     {
                         reader =>
                         {
-                            var streetGUID = reader.GetAttribute("AOGUID");
-                            streetGUIDs.Add(streetGUID);
-                            return Guid.Parse(streetGUID);
+                            var townGUID = Guid.Parse(reader.GetAttribute("AOGUID"));
+                            newGUIDs.Add(townGUID);
+                            return townGUID;
                         },
-                        reader => Guid.Parse(reader.GetAttribute("PARENTGUID")),
+                        reader => tempParentGUID,
                         reader => reader.GetAttribute("OFFNAME"),
                         reader => reader.GetAttribute("FORMALNAME")
-                    };
-                    watch.Restart();
-                    writer.DestinationTableName = "Street";
-                    writer.WriteToServer(new FIASXMLReader(XmlReader.Create(objectsPath), streetPredicate, streetParser));
-                    watch.Stop();
-                    Console.WriteLine("Улицы записаны, времени затрачено - {0}", watch.ElapsedMilliseconds);
-                }
+                    },
+                    new Func<XmlReader, object>[]
+                    {
+                        reader =>
+                        {
+                            var streetGUID = Guid.Parse(reader.GetAttribute("AOGUID"));
+                            newGUIDs.Add(streetGUID);
+                            return streetGUID;
+                        },
+                        reader => tempParentGUID,
+                        reader => reader.GetAttribute("OFFNAME"),
+                        reader => reader.GetAttribute("FORMALNAME")
+                    },
+                    new Func<XmlReader, object>[]
+                    {
+                        reader =>
+                        {
+                            return Guid.Parse(reader.GetAttribute("HOUSEGUID"));
+                        },
+                        reader => tempParentGUID,
+                        reader => reader.GetAttribute("OFFNAME"),
+                        reader => reader.GetAttribute("FORMALNAME")
+                    }
+                };
 
-                townGUIDs.Clear();
+                for (var tableNumber = 0; tableNumber < tablesCount; tableNumber++)
+                {
+                    using (var writer = new SqlBulkCopy(connection))
+                    {
+                        writer.BatchSize = 1000;
+                        writer.DestinationTableName = tablesNames[tableNumber];
+                        watch.Restart();
+                        writer.WriteToServer(new FIASXMLReader(XmlReader.Create(soursePaths[tableNumber]), predicates[tableNumber], parsers[tableNumber]));
+                        watch.Stop();
+                        Console.WriteLine("Таблица [{0}] заполнена, времени затрачено - {1}", tablesNames[tableNumber], watch.ElapsedMilliseconds);
+                    }
+
+                    parentGUIDs = new SortedSet<Guid>(newGUIDs);
+                    newGUIDs.Clear();
+                }
             }
         }
     }
 }
+
