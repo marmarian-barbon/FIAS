@@ -270,7 +270,13 @@ namespace XMLtoSQL
                     reader =>
                     {
                         var level = byte.Parse(reader.GetAttribute("AOLEVEL"));
-                        tempParentGUID = Guid.Parse(reader.GetAttribute("PARENTGUID"));
+                        var parentGUID = reader.GetAttribute("PARENTGUID");
+                        if (parentGUID == null)
+                        {
+                            return false;
+                        }
+
+                        tempParentGUID = Guid.Parse(parentGUID);
                         return (level == 4 || level == 6) && parentGUIDs.Contains(tempParentGUID);
                     },
                     reader =>
