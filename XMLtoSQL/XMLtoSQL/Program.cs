@@ -355,8 +355,8 @@ namespace XMLtoSQL
                             return Guid.Parse(reader.GetAttribute("HOUSEGUID"));
                         },
                         reader => tempParentGUID,
-                        reader => reader.GetAttribute("OFFNAME"),
-                        reader => reader.GetAttribute("FORMALNAME")
+                        reader => reader.GetAttribute("POSTALCODE"),
+                        reader => reader.GetAttribute("HOUSENUM")
                     }
                 };
 
