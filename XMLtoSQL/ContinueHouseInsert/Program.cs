@@ -1,197 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using FIASXMLReader;
 
-namespace XMLtoSQL
+namespace ContinueHouseInsert
 {
-    public class FIASXMLReader : System.Data.IDataReader
-    {
-        private XmlReader _xmlReader;
-        private Func<XmlReader, bool> _predicate;
-        private Func<XmlReader, object>[] _converter;
-
-        public FIASXMLReader(XmlReader xmlReader, Func<XmlReader, bool> predicate, Func<XmlReader, object>[] converter)
-        {
-            this._xmlReader = xmlReader;
-            this._predicate = predicate;
-            this._converter = converter;
-        }
-
-        public object this[int i] => throw new NotImplementedException();
-
-        public object this[string name] => throw new NotImplementedException();
-
-        public int Depth => throw new NotImplementedException();
-
-        public bool IsClosed => throw new NotImplementedException();
-
-        public int RecordsAffected => throw new NotImplementedException();
-
-        public int FieldCount => 4;
-
-        public void Close()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Dispose()
-        {
-            this._xmlReader.Close();
-        }
-
-        public bool GetBoolean(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public byte GetByte(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
-        {
-            throw new NotImplementedException();
-        }
-
-        public char GetChar(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IDataReader GetData(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string GetDataTypeName(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public DateTime GetDateTime(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public decimal GetDecimal(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public double GetDouble(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Type GetFieldType(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public float GetFloat(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Guid GetGuid(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public short GetInt16(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetInt32(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long GetInt64(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string GetName(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetOrdinal(string name)
-        {
-            throw new NotImplementedException();
-        }
-
-        public DataTable GetSchemaTable()
-        {
-            throw new NotImplementedException();
-        }
-
-        public string GetString(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public object GetValue(int i)
-        {
-            return this._converter[i](this._xmlReader);
-        }
-
-        public int GetValues(object[] values)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool IsDBNull(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool NextResult()
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Read()
-        {
-            while (this._xmlReader.Read() && !this._predicate(this._xmlReader)) { }
-            return !this._xmlReader.EOF;
-        }
-    }
-
     class Program
     {
         static void Main(string[] args)
         {
-            /*if (args.Length != 2)
-            {
-                Console.WriteLine("Программа на вход принимает 2 аргумента:");
-                Console.WriteLine("Путь к файлу AS_ADDROBJ_*.XML");
-                Console.WriteLine("Путь к файлу AS_HOUSE_*.XML");
-            }
-            */
-
-            /*var objectsXML = args[0];
-            var housesXML = args[1];*/
-
-            var objectsPath = @"F:\Browser\fias_xml\AS_ADDROBJ_20171214_4af453b1-c874-4a55-935d-91aa70546984.XML";
-            var housesPath = @"F:\Browser\fias_xml\AS_HOUSE_20171214_ad9f8dea-850f-4f70-9f54-1e05d9ecde76.XML";
-
-            using (var connection = new SqlConnection())
+            using (var connection = new System.Data.SqlClient.SqlConnection())
             {
                 var stringBuilder = new SqlConnectionStringBuilder();
                 var data = @".\SQLEXPRESS";
@@ -223,9 +45,20 @@ namespace XMLtoSQL
                     }
                 }
 
-                var watch = new Stopwatch();
+
+                var command = new SqlCommand("SELECT * FROM [dbo].[Street]", connection);
+                var result = command.ExecuteReader();
+                var streetGUIDs = new List<Guid>();
+                while (result.Read())
+                {
+                    streetGUIDs.Add((Guid)result[0]);
+                }
+
+                var parentGUIDs = new SortedSet<Guid>(streetGUIDs);
+                Console.WriteLine(parentGUIDs.Count);
+
+                var watch = new System.Diagnostics.Stopwatch();
                 var newGUIDs = new List<Guid>();
-                var parentGUIDs = (SortedSet<Guid>)(null);
                 var tempParentGUID = new Guid();
                 var tempPostalIndex = (string)null;
                 var tempHouseNumber = (string)null;
@@ -239,6 +72,9 @@ namespace XMLtoSQL
                     "Street",
                     "House"
                 };
+
+                var objectsPath = @"F:\Browser\fias_xml\AS_ADDROBJ_20171214_4af453b1-c874-4a55-935d-91aa70546984.XML";
+                var housesPath = @"F:\Browser\fias_xml\AS_HOUSE_20171214_ad9f8dea-850f-4f70-9f54-1e05d9ecde76.XML";
 
                 var soursePaths = new string[tablesCount];
                 for (var i = 0; i < soursePaths.Length - 1; i++)
@@ -333,7 +169,7 @@ namespace XMLtoSQL
                             return false;
                         }
 
-                        
+
 
                         tempHouseNumber = reader.GetAttribute("HOUSENUM");
                         if (tempHouseNumber == null)
@@ -408,24 +244,46 @@ namespace XMLtoSQL
                     }
                 };
 
-                for (var tableNumber = 0; tableNumber < tablesCount-1; tableNumber++)
+                for (var tableNumber = 4; tableNumber < tablesCount; tableNumber++)
                 {
                     using (var writer = new SqlBulkCopy(connection))
                     {
                         writer.BatchSize = 1000;
                         writer.DestinationTableName = tablesNames[tableNumber];
                         watch.Restart();
-                        var reader = (new FIASXMLReader(XmlReader.Create(soursePaths[tableNumber]), predicates[tableNumber], parsers[tableNumber]));
+                        var xmlReader = XmlReader.Create(soursePaths[tableNumber]);
+
+                        var commandForHouses = new SqlCommand("SELECT * FROM [dbo].[House]", connection);
+                        var resultForHouses = commandForHouses.ExecuteReader();
+                        var houseGUIDsAlready = new List<Guid>();
+                        while (resultForHouses.Read())
+                        {
+                            houseGUIDsAlready.Add((Guid)resultForHouses[0]);
+                        }
+
+                        Console.WriteLine("Added");
+
+                        var sortedHouseGUIDsAlready = new SortedSet<Guid>(houseGUIDsAlready);
+                        Console.WriteLine("Sorted");
+                        while (xmlReader.Read())
+                        {
+                            if (predicates[4](xmlReader))
+                            {
+                                if (!sortedHouseGUIDsAlready.Contains(Guid.Parse(xmlReader.GetAttribute("HOUSEGUID"))))
+                                {
+                                    Console.WriteLine("Finally!");
+                                    break;
+                                }
+                            }
+                        }
+
+                        var reader = (new FIASXMLReader.FIASXMLReader(xmlReader, predicates[tableNumber], parsers[tableNumber]));
                         writer.WriteToServer(reader);
                         watch.Stop();
                         Console.WriteLine("Таблица [{0}] заполнена, времени затрачено - {1}", tablesNames[tableNumber], watch.ElapsedMilliseconds);
                     }
-
-                    parentGUIDs = new SortedSet<Guid>(newGUIDs);
-                    newGUIDs.Clear();
                 }
             }
         }
     }
 }
-
