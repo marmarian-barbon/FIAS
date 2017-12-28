@@ -33,40 +33,24 @@ namespace TryParse
             connection.Open();
             Console.WriteLine(connection.State);
             connection.Close();
-            /*using (var reader = XmlReader.Create(path3))
+            var currentDate = DateTime.Today;
+            using (var reader = XmlReader.Create(path2))
             {
-                var attributes = new List<List<string[]>>();
                 while (reader.Read())
                 {
-                    if (reader.GetAttribute("LEVEL") == "1" && reader.GetAttribute("ACTSTATUS") == "1")
+                    if (reader.GetAttribute("HOUSEGUID") == "43cbf44f-3c30-4656-98ac-839f49e12dee")
                     {
-                        Console.WriteLine(reader.GetAttribute("HOUSENUM"));
-                        var record = new List<string[]>();
-                        for (var i = 0; i < reader.AttributeCount; i++)
+                        if (DateTime.Parse(reader.GetAttribute("ENDDATE")) >= currentDate)
                         {
-                            var attribute = new string[2];
-                            reader.MoveToAttribute(i);
-                            attribute[0] = reader.Name;
-                            attribute[1] = reader.Value;
-                            record.Add(attribute);
-                        }
-
-                        Console.WriteLine(attributes.Count);
-                        attributes.Add(record);
-                    }
-                }
-
-                using (var file = new StreamWriter(@"F:\Regions.txt"))
-                {
-                    foreach (var record in attributes)
-                    {
-                        for (var i = 0; i < record.Count; i++)
-                        {
-                            file.WriteLine(record[i][0] + " = " + record[i][1]);
+                            for (var i = 0; i < reader.AttributeCount; i++)
+                            {
+                                reader.MoveToAttribute(i);
+                                Console.WriteLine("{0} = {1}", reader.Name, reader.Value);
+                            }
                         }
                     }
                 }
-            }*/
+            }
         }
     }
 }

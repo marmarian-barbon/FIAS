@@ -168,14 +168,7 @@ namespace XMLtoSQL
 
         public bool Read()
         {
-            while (this._xmlReader.Read())
-            {
-                if (this._xmlReader.GetAttribute("ACTSTATUS") == "1" && this._predicate(this._xmlReader))
-                {
-                    break;
-                }
-            }
-
+            while (this._xmlReader.Read() && !this._predicate(this._xmlReader)) { }
             return !this._xmlReader.EOF;
         }
     }
@@ -234,6 +227,8 @@ namespace XMLtoSQL
                 var newGUIDs = new List<Guid>();
                 var parentGUIDs = (SortedSet<Guid>)(null);
                 var tempParentGUID = new Guid();
+                var tempPostalIndex = (string)null;
+                var tempHouseNumber = (string)null;
 
                 var tablesCount = 5;
                 var tablesNames = new string[]
@@ -250,13 +245,27 @@ namespace XMLtoSQL
                 {
                     soursePaths[i] = objectsPath;
                 }
+                var currentDate = DateTime.Today;
 
                 soursePaths[soursePaths.Length - 1] = housesPath;
                 var predicates = new Func<XmlReader, bool>[]
                 {
-                    reader => reader.GetAttribute("AOLEVEL") == "1",
                     reader =>
                     {
+                        if (reader.GetAttribute("ACTSTATUS") != "1")
+                        {
+                            return false;
+                        }
+
+                        return reader.GetAttribute("AOLEVEL") == "1";
+                    },
+                    reader =>
+                    {
+                        if (reader.GetAttribute("ACTSTATUS") != "1")
+                        {
+                            return false;
+                        }
+
                         var level = byte.Parse(reader.GetAttribute("AOLEVEL"));
                         var parentGUID = reader.GetAttribute("PARENTGUID");
                         if ((level != 3 && level != 35) || parentGUID == null)
@@ -269,6 +278,11 @@ namespace XMLtoSQL
                     },
                     reader =>
                     {
+                        if (reader.GetAttribute("ACTSTATUS") != "1")
+                        {
+                            return false;
+                        }
+
                         var level = byte.Parse(reader.GetAttribute("AOLEVEL"));
                         var parentGUID = reader.GetAttribute("PARENTGUID");
                         if ((level != 4 && level != 6) || parentGUID == null)
@@ -281,6 +295,11 @@ namespace XMLtoSQL
                     },
                     reader =>
                     {
+                        if (reader.GetAttribute("ACTSTATUS") != "1")
+                        {
+                            return false;
+                        }
+
                         var level = byte.Parse(reader.GetAttribute("AOLEVEL"));
                         var parentGUID = reader.GetAttribute("PARENTGUID");
                         if ((level != 7 && level != 75) || parentGUID == null)
@@ -293,6 +312,35 @@ namespace XMLtoSQL
                     },
                     reader =>
                     {
+                        tempPostalIndex = reader.GetAttribute("POSTALCODE");
+                        if (tempPostalIndex ==null)
+                        {
+                            return false;
+                        }
+
+                        /*if (reader.GetAttribute("STATSTATUS") != "0")
+                        {
+                            return false;
+                        }*/
+
+                        if (DateTime.Parse(reader.GetAttribute("ENDDATE")) <= currentDate)
+                        {
+                            return false;
+                        }
+
+                        if (DateTime.Parse(reader.GetAttribute("STARTDATE")) > currentDate)
+                        {
+                            return false;
+                        }
+
+                        
+
+                        tempHouseNumber = reader.GetAttribute("HOUSENUM");
+                        if (tempHouseNumber == null)
+                        {
+                            return false;
+                        }
+
                         tempParentGUID = Guid.Parse(reader.GetAttribute("AOGUID"));
                         return parentGUIDs.Contains(tempParentGUID);
                     }
@@ -355,8 +403,8 @@ namespace XMLtoSQL
                             return Guid.Parse(reader.GetAttribute("HOUSEGUID"));
                         },
                         reader => tempParentGUID,
-                        reader => reader.GetAttribute("POSTALCODE"),
-                        reader => reader.GetAttribute("HOUSENUM")
+                        reader => tempPostalIndex,
+                        reader => tempHouseNumber
                     }
                 };
 
