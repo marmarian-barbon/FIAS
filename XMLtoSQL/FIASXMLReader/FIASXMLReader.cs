@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-
-namespace FIASXMLReader
+﻿namespace FIASXMLReader
 {
+    using System;
+    using System.Data;
+    using System.Xml;
+
     public class FIASXMLReader : System.Data.IDataReader
     {
         private XmlReader _xmlReader;
@@ -21,126 +17,171 @@ namespace FIASXMLReader
             this._converter = converter;
         }
 
-        public object this[int i] => throw new NotImplementedException();
+        public object this[int i] => this._xmlReader[i];
 
-        public object this[string name] => throw new NotImplementedException();
+        public object this[string name] => this._xmlReader[name];
 
-        public int Depth => throw new NotImplementedException();
+        public int Depth => this._xmlReader.Depth;
 
-        public bool IsClosed => throw new NotImplementedException();
+        public bool IsClosed => false;
 
-        public int RecordsAffected => throw new NotImplementedException();
+        public int RecordsAffected => new Random().Next();
 
         public int FieldCount => 4;
 
         public void Close()
         {
-            throw new NotImplementedException();
+            this._xmlReader.Close();
         }
 
         public void Dispose()
         {
-            this._xmlReader.Close();
+            this.Close();
         }
 
         public bool GetBoolean(int i)
         {
-            throw new NotImplementedException();
+            var value = this._xmlReader[i];
+            return (value == "1");
         }
 
         public byte GetByte(int i)
         {
-            throw new NotImplementedException();
+            var value = this._xmlReader[i];
+            var result = (byte)0;
+            if (byte.TryParse(value, out result))
+            {
+                return result;
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         public long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
         {
-            throw new NotImplementedException();
+            return 0;
         }
 
         public char GetChar(int i)
         {
-            throw new NotImplementedException();
+            var value = this._xmlReader[i];
+            if (value.Length == 1)
+            {
+                return value[0];
+            }
+            else
+            {
+                return (char)0;
+            }
         }
 
         public long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
         {
-            throw new NotImplementedException();
+            return 0;
         }
 
         public IDataReader GetData(int i)
         {
-            throw new NotImplementedException();
+            return new FIASXMLReader(this._xmlReader, this._predicate, new Func<XmlReader, object>[] { this._converter[i] });
         }
 
         public string GetDataTypeName(int i)
         {
-            throw new NotImplementedException();
+            return "String";
         }
 
         public DateTime GetDateTime(int i)
         {
-            throw new NotImplementedException();
+            var value = this._xmlReader[i];
+            var result = DateTime.MinValue;
+            DateTime.TryParse(value, out result);
+            return result;
         }
 
         public decimal GetDecimal(int i)
         {
-            throw new NotImplementedException();
+            var result = decimal.MinValue;
+            decimal.TryParse(this._xmlReader[i], out result);
+            return result;
         }
 
         public double GetDouble(int i)
         {
-            throw new NotImplementedException();
+            var result = double.MinValue;
+            double.TryParse(this._xmlReader[i], out result);
+            return result;
         }
 
         public Type GetFieldType(int i)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         public float GetFloat(int i)
         {
-            throw new NotImplementedException();
+            var result = float.MinValue;
+            float.TryParse(this._xmlReader[i], out result);
+            return result;
         }
 
         public Guid GetGuid(int i)
         {
-            throw new NotImplementedException();
+            var result = Guid.Empty;
+            Guid.TryParse(this._xmlReader[i], out result);
+            return result;
         }
 
         public short GetInt16(int i)
         {
-            throw new NotImplementedException();
+            var result = short.MinValue;
+            short.TryParse(this._xmlReader[i], out result);
+            return result;
         }
 
         public int GetInt32(int i)
         {
-            throw new NotImplementedException();
+            var result = int.MinValue;
+            int.TryParse(this._xmlReader[i], out result);
+            return result;
         }
 
         public long GetInt64(int i)
         {
-            throw new NotImplementedException();
+            var result = long.MinValue;
+            long.TryParse(this._xmlReader[i], out result);
+            return result;
         }
 
         public string GetName(int i)
         {
-            throw new NotImplementedException();
+            this._xmlReader.MoveToAttribute(i);
+            return this._xmlReader.Name + (this._xmlReader.MoveToElement() ? "" : "");
         }
 
         public int GetOrdinal(string name)
         {
-            throw new NotImplementedException();
+            for (var i=0; i < this._xmlReader.AttributeCount; i++)
+            {
+                this._xmlReader.MoveToAttribute(i);
+                if (this._xmlReader.Name == name)
+                {
+                    return i + (this._xmlReader.MoveToElement() ? 0 : 0);
+                }
+            }
+
+            return -1;
         }
 
         public DataTable GetSchemaTable()
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         public string GetString(int i)
         {
-            throw new NotImplementedException();
+            return this._xmlReader[i];
         }
 
         public object GetValue(int i)
@@ -150,17 +191,22 @@ namespace FIASXMLReader
 
         public int GetValues(object[] values)
         {
-            throw new NotImplementedException();
+            for (var i=0; i < values.Length; i++)
+            {
+                values[i] = this._converter[i](this._xmlReader);
+            }
+
+            return values.Length;
         }
 
         public bool IsDBNull(int i)
         {
-            throw new NotImplementedException();
+            return this._xmlReader[i] == null;
         }
 
         public bool NextResult()
         {
-            throw new NotImplementedException();
+            return this.Read();
         }
 
         public bool Read()
@@ -171,13 +217,12 @@ namespace FIASXMLReader
 
         IDataReader IDataRecord.GetData(int i)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         DataTable IDataReader.GetSchemaTable()
         {
-            throw new NotImplementedException();
+            return null;
         }
     }
-
 }
