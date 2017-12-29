@@ -1,27 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using System.Configuration;
-using FIASXMLReader;
-
-namespace XMLtoSQL
+﻿namespace XMLtoSQL
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data.SqlClient;
+    using System.Diagnostics;
+    using System.Xml;
+    using System.Configuration;
+
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            var objectsPath = args[0];
-            var housesPath = args[1];
+            var settings = (ConfigurationManager.GetSection("applicationSettings/XMLtoSQL.Properties.Settings") as ClientSettingsSection).Settings;
+            var objectsPath = settings.Get("Объекты").Value.ValueXml.InnerText;
+            var housesPath = settings.Get("Дома").Value.ValueXml.InnerText;
             using (var connection = new SqlConnection())
             {
-                var connectionString = ConfigurationManager.ConnectionStrings["XMLtoSQL.Properties.Settings.Параметр"].ConnectionString;
+                var connectionString = ConfigurationManager.ConnectionStrings["XMLtoSQL.Properties.Settings.СтрокаСоединенияСSQL"].ConnectionString;
                 connection.ConnectionString = connectionString;
                 try
                 {
@@ -40,7 +35,6 @@ namespace XMLtoSQL
                 var tempParentGUID = new Guid();
                 var tempPostalIndex = (string)null;
                 var tempHouseNumber = (string)null;
-
                 var tablesCount = 5;
                 var tablesNames = new string[]
                 {

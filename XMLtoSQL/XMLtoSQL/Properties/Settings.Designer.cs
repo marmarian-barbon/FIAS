@@ -28,9 +28,27 @@ namespace XMLtoSQL.Properties {
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
         [global::System.Configuration.DefaultSettingValueAttribute("Data Source=DESKTOP-17UB0HN\\SQLEXPRESS;Initial Catalog=RestrictedFIAS;Persist Sec" +
             "urity Info=True;User ID=sa;Password=superadmin")]
-        public string Параметр {
+        public string СтрокаСоединенияСSQL {
             get {
-                return ((string)(this["Параметр"]));
+                return ((string)(this["СтрокаСоединенияСSQL"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("F:\\Browser\\fias_xml\\AS_ADDROBJ_20171214_4af453b1-c874-4a55-935d-91aa70546984.XML")]
+        public string Объекты {
+            get {
+                return ((string)(this["Объекты"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("F:\\Browser\\fias_xml\\AS_HOUSE_20171214_ad9f8dea-850f-4f70-9f54-1e05d9ecde76.XML")]
+        public string Дома {
+            get {
+                return ((string)(this["Дома"]));
             }
         }
     }
