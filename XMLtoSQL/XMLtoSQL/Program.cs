@@ -17,13 +17,6 @@ namespace XMLtoSQL
     {
         static void Main(string[] args)
         {
-            if (args.Length != 2)
-            {
-                Console.WriteLine("Программа на вход принимает 2 аргумента:");
-                Console.WriteLine("Путь к файлу AS_ADDROBJ_*.XML");
-                Console.WriteLine("Путь к файлу AS_HOUSE_*.XML");
-            }
-
             var objectsPath = args[0];
             var housesPath = args[1];
             using (var connection = new SqlConnection())
