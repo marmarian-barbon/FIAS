@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FIASXMLReader", "FIASXMLRea
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebAPI", "WebAPI\WebAPI.csproj", "{1D1A6DCE-1FBC-4DA5-8E75-D38BF70A885C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TryGetRederResult", "TryGetRederResult\TryGetRederResult.csproj", "{D462B293-524F-450A-8B2A-4F6DD196E672}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +63,14 @@ Global
 		{1D1A6DCE-1FBC-4DA5-8E75-D38BF70A885C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1D1A6DCE-1FBC-4DA5-8E75-D38BF70A885C}.Release|x64.ActiveCfg = Release|Any CPU
 		{1D1A6DCE-1FBC-4DA5-8E75-D38BF70A885C}.Release|x64.Build.0 = Release|Any CPU
+		{D462B293-524F-450A-8B2A-4F6DD196E672}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D462B293-524F-450A-8B2A-4F6DD196E672}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D462B293-524F-450A-8B2A-4F6DD196E672}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D462B293-524F-450A-8B2A-4F6DD196E672}.Debug|x64.Build.0 = Debug|Any CPU
+		{D462B293-524F-450A-8B2A-4F6DD196E672}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D462B293-524F-450A-8B2A-4F6DD196E672}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D462B293-524F-450A-8B2A-4F6DD196E672}.Release|x64.ActiveCfg = Release|Any CPU
+		{D462B293-524F-450A-8B2A-4F6DD196E672}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
