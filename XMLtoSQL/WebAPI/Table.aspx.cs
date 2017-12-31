@@ -35,11 +35,11 @@
                 {
                     if (officials[i])
                     {
-                        conditions.Add($"[{tableNames[i]}].[OFFNAME] = {names[i]}");
+                        conditions.Add($"[{tableNames[i]}].[OFFNAME] = N'{names[i]}'");
                     }
                     else
                     {
-                        conditions.Add($"[{tableNames[i]}].[FORMALNAME] = {names[i]}");
+                        conditions.Add($"[{tableNames[i]}].[FORMALNAME] = N'{names[i]}'");
                     }
                 }
             }
@@ -110,20 +110,17 @@
                 }
             }
 
-            this.Label1.Text = mainQuerry;
             var connection = new SqlConnection();
             connection.ConnectionString = @"Data Source=DESKTOP-17UB0HN\SQLEXPRESS;Initial Catalog=RestrictedFIAS;Persist Security Info=True;User ID=sa;Password=superadmin;Context Connection=False";
             connection.Open();
             var command = new SqlCommand(mainQuerry, connection);
             var result = command.ExecuteReader();
             Cache[Request.UserHostAddress] = result;
-            //this.ViewState.Add("connection", connection);
             Response.Redirect("Table.aspx");
         }
 
         protected void Button2_Click(object sender, EventArgs e)
         {
-            //var connection = (SqlConnection)this.ViewState["connection"];
             var result = (SqlDataReader)Cache[Request.UserHostAddress];
             if (result.Read())
             {
@@ -142,7 +139,6 @@
             {
                 this.Button2.Text = "Результаты кончились";
                 this.Button2.Enabled = false;
-                //connection.Close();
             }
         }
     }

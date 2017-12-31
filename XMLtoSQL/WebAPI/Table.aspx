@@ -9,8 +9,6 @@
 </head>
 <body>
     <form id="form1" runat="server">
-        <asp:Label ID="Label1" runat="server" Text="Label"></asp:Label>
-        <br />
         <asp:Button ID="Button2" runat="server" OnClick="Button2_Click" Text="Получить следующий результат" />
         <p>
             <asp:Label ID="lblRegionCode" runat="server" Text="Код Региона" Width="10%"></asp:Label>
